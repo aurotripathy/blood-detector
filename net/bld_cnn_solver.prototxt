@@ -1,0 +1,15 @@
+net: "net/bld_cnn.prototxt"
+test_iter: 100
+test_interval: 100
+base_lr: 0.001
+display: 20
+max_iter: 20000
+lr_policy: "step"
+stepsize: 10000
+gamma: 0.1
+momentum: 0.95
+weight_decay: 0.0002
+snapshot: 5000
+snapshot_prefix: "snapshots/bld_cnn"
+type: "Adam"
+solver_mode: GPU
