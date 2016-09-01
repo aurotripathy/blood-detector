@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import fnmatch
+import os
+from random import shuffle
+from sklearn.cross_validation import train_test_split
+
+path = '/media/tempuser/RAID 5/blood-dataset'
+NO_BLOOD_LABEL = 0
+YS_BLOOD_LABEL = 1
+
+extensions = ['*.JPG', '*.jpg', '*.png', '*.PNG', '*.JEPG', '*.jepg']
+img_files = []
+for root, dirnames, filenames in os.walk(path):
+    for extension in extensions:
+        for filename in fnmatch.filter(filenames, extension):
+            img_files.append(os.path.join(root, filename))
+
+shuffle(img_files) # in-place
+
+print "names of files,  {}".format(img_files)
+print "number of files, {}".format(len(img_files))
+
+
+def prep_labels(label_file, names_file):
+    with open(label_file, 'w') as f:
+        for img_name in names_file:
+            if '/NoBlood/' in img_name:
+                f.write ("{} {}\n".format(img_name, NO_BLOOD_LABEL))
+            elif '/Blood/' in img_name:
+                f.write ("{} {}\n".format(img_name, YS_BLOOD_LABEL))
+            else:
+                print "Error in file path name"
+                exit(2)
+
+# 80/20 train/val split
+img_train, img_val = train_test_split(img_files, test_size = 0.2)
+print "length of train data       {}".format(len(img_train))
+print "length of validation  data {}".format(len(img_val))
+prep_labels('val_label.txt', img_val)
+prep_labels('train_label.txt', img_train)
+
