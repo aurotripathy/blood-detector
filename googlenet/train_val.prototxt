@@ -1,7 +1,7 @@
 name: "GoogleNet"
 layer {
   name: "data"
-  type: "Data"
+  type: "ImageData"
   top: "data"
   top: "label"
   include {
@@ -15,14 +15,15 @@ layer {
     mean_value: 123
   }
   data_param {
-    source: "examples/imagenet/ilsvrc12_train_lmdb"
+    source: "/media/tempuser/RAID 5/blood-detector/train_label.txt"
     batch_size: 32
-    backend: LMDB
+    new_height: 320
+    new_width: 240
   }
 }
 layer {
   name: "data"
-  type: "Data"
+  type: "ImageData"
   top: "data"
   top: "label"
   include {
@@ -36,9 +37,10 @@ layer {
     mean_value: 123
   }
   data_param {
-    source: "examples/imagenet/ilsvrc12_val_lmdb"
+    source: "/media/tempuser/RAID 5/blood-detector/val_label.txt"
     batch_size: 50
-    backend: LMDB
+    new_height: 320
+    new_width: 240
   }
 }
 layer {
