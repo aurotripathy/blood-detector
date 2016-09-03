@@ -9,12 +9,11 @@ layer {
   }
   transform_param {
     mirror: true
-    crop_size: 224
     mean_value: 104
     mean_value: 117
     mean_value: 123
   }
-  data_param {
+  image_data_param {
     source: "/media/tempuser/RAID 5/blood-detector/train_label.txt"
     batch_size: 32
     new_height: 320
@@ -31,12 +30,11 @@ layer {
   }
   transform_param {
     mirror: false
-    crop_size: 224
     mean_value: 104
     mean_value: 117
     mean_value: 123
   }
-  data_param {
+  image_data_param {
     source: "/media/tempuser/RAID 5/blood-detector/val_label.txt"
     batch_size: 50
     new_height: 320
