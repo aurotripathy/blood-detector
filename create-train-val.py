@@ -23,20 +23,25 @@ print "number of files, {}".format(len(img_files))
 
 
 def prep_labels(label_file, names_file):
+    blood_label_count , no_blood_label_count = 0, 0
     with open(label_file, 'w') as f:
         for img_name in names_file:
             if '/NoBlood/' in img_name:
                 f.write ("{} {}\n".format(img_name, NO_BLOOD_LABEL))
+                no_blood_label_count += 1
             elif '/Blood/' in img_name:
                 f.write ("{} {}\n".format(img_name, YS_BLOOD_LABEL))
+                blood_label_count += 1
             else:
                 print "Error in file path name"
                 exit(2)
+    return blood_label_count, no_blood_label_count
 
 # 80/20 train/val split
 img_train, img_val = train_test_split(img_files, test_size = 0.2)
-print "length of train data       {}".format(len(img_train))
-print "length of validation  data {}".format(len(img_val))
-prep_labels('val_label.txt', img_val)
-prep_labels('train_label.txt', img_train)
-
+print "Length of train data       {}".format(len(img_train))
+print "Length of validation  data {}".format(len(img_val))
+val_blood_label_count, val_no_blood_label_count = prep_labels('val_label.txt', img_val)
+train_blood_label_count, train_no_blood_label_count = prep_labels('train_label.txt', img_train)
+print "Training   set - count of images w/blood {} and w/o blood {}".format(train_blood_label_count, train_no_blood_label_count) 
+print "Validation set - count of images w/blood {} and w/o blood {}".format(val_blood_label_count, val_no_blood_label_count) 
