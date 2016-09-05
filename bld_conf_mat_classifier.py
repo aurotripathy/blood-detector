@@ -60,7 +60,7 @@ set_trace()
 with open(label_file) as f:
     file_label_tuples = f.readlines()
 
-frames = [frame.rsplit(' ', 1)[0] for frame in file_label_tuples]
+images = [frame.rsplit(' ', 1)[0] for frame in file_label_tuples]
 labels = [frame.rsplit(' ', 1)[1] for frame in file_label_tuples]
 labels_gt = map(int, labels)
 
@@ -73,7 +73,7 @@ net = caffe.Classifier(deploy_network, trained_model,
 conf_matrix = np.zeros((2, 2), dtype=int)
 
 labels_pred = []
-for i, f in enumerate(frames):
+for i, f in enumerate(images):
     input_image = caffe.io.load_image(f)
     input_image = caffe.io.resize_image(input_image, (320, 240))
     prediction = net.predict([input_image], oversample=False)
@@ -88,5 +88,5 @@ print('Average precision score', average_precision_score(labels_gt, labels_pred)
 print('Precision score', precision_score(labels_gt, labels_pred))
 print('Recall score', recall_score(labels_gt, labels_pred))
 print('Accuracy score', accuracy_score(labels_gt, labels_pred))
-print('Total frames classified', len(frames))
+print('Total images classified', len(images))
 print('mean', np.load(caffe_root + 'python/caffe/imagenet/ilsvrc_2012_mean.npy').mean(1).mean(1))
