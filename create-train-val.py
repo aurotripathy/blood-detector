@@ -9,7 +9,7 @@ path = '/media/tempuser/RAID 5/blood-dataset'
 NO_BLOOD_LABEL = 0
 YS_BLOOD_LABEL = 1
 
-extensions = ['*.JPG', '*.jpg', '*.png', '*.PNG', '*.JEPG', '*.jpeg']
+extensions = ['*.JPG', '*.jpg', '*.png', '*.PNG', '*.JPEG', '*.jpeg']
 img_files = []
 for root, dirnames, filenames in os.walk(path):
     for extension in extensions:
