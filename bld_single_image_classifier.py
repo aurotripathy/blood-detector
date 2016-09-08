@@ -11,7 +11,7 @@ caffe_root = '../../'
 import sys
 sys.path.insert(0, caffe_root + 'python')
 import caffe
-caffe.set_mode_gpu()
+caffe.set_mode_gpu() # if using a cpu, change to caffe.set_mode_cpu()
 caffe.set_device(0)
 
 
