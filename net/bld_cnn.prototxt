@@ -260,10 +260,10 @@ layer {
   }
 }
 layer {
-  name: "fc6"
+  name: "fc6-1"
   type: "InnerProduct"
   bottom: "pool5"
-  top: "fc6"
+  top: "fc6-1"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -286,14 +286,14 @@ layer {
 layer {
   name: "relu6"
   type: "ReLU"
-  bottom: "fc6"
-  top: "fc6"
+  bottom: "fc6-1"
+  top: "fc6-1"
 }
 layer {
   name: "drop6"
   type: "Dropout"
-  bottom: "fc6"
-  top: "fc6"
+  bottom: "fc6-1"
+  top: "fc6-1"
   dropout_param {
     dropout_ratio: 0.5
   }
@@ -301,7 +301,7 @@ layer {
 layer {
   name: "fc7"
   type: "InnerProduct"
-  bottom: "fc6"
+  bottom: "fc6-1"
   top: "fc7"
   param {
     lr_mult: 1
@@ -338,10 +338,10 @@ layer {
   }
 }
 layer {
-  name: "fc8"
+  name: "fc8-1"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "fc8"
+  top: "fc8-1"
   param {
     lr_mult: 1
     decay_mult: 1
@@ -364,7 +364,7 @@ layer {
 layer {
   name: "accuracy"
   type: "Accuracy"
-  bottom: "fc8"
+  bottom: "fc8-1"
   bottom: "label"
   top: "accuracy"
   include {
@@ -374,7 +374,7 @@ layer {
 layer {
   name: "loss"
   type: "SoftmaxWithLoss"
-  bottom: "fc8"
+  bottom: "fc8-1"
   bottom: "label"
   top: "loss"
 }
