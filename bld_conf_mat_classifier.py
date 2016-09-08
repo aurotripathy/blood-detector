@@ -80,15 +80,11 @@ dir_no_blood_as_blood = 'no-blood-as-blood/'
 
 if os.path.isdir(dir_blood_as_no_blood):
     rmtree(dir_blood_as_no_blood)
-    os.makedirs(dir_blood_as_no_blood)
-else:
-    os.makedirs(dir_blood_as_no_blood)
+os.makedirs(dir_blood_as_no_blood)
 
 if os.path.isdir(dir_no_blood_as_blood):
     rmtree(dir_no_blood_as_blood)
-    os.mkdir(dir_no_blood_as_blood)
-else:
-    os.mkdir(dir_no_blood_as_blood)
+os.mkdir(dir_no_blood_as_blood)
 
 labels_pred = []
 for i, f in enumerate(images):
