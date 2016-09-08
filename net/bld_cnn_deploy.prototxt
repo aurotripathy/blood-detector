@@ -149,10 +149,10 @@ layer {
   }
 }
 layer {
-  name: "fc6"
+  name: "fc6-1"
   type: "InnerProduct"
   bottom: "pool5"
-  top: "fc6"
+  top: "fc6-1"
   inner_product_param {
     num_output: 4096
   }
@@ -160,8 +160,8 @@ layer {
 layer {
   name: "relu6"
   type: "ReLU"
-  bottom: "fc6"
-  top: "fc6"
+  bottom: "fc6-1"
+  top: "fc6-1"
 }
 # layer {
 #   name: "drop6"
@@ -175,7 +175,7 @@ layer {
 layer {
   name: "fc7"
   type: "InnerProduct"
-  bottom: "fc6"
+  bottom: "fc6-1"
   top: "fc7"
   inner_product_param {
     num_output: 4096
@@ -197,10 +197,10 @@ layer {
 #   }
 # }
 layer {
-  name: "fc8"
+  name: "fc8-1"
   type: "InnerProduct"
   bottom: "fc7"
-  top: "fc8"
+  top: "fc8-1"
   inner_product_param {
     num_output: 2
   }
@@ -208,6 +208,6 @@ layer {
 layer {
   name: "prob"
   type: "Softmax"
-  bottom: "fc8"
+  bottom: "fc8-1"
   top: "prob"
 }
