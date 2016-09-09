@@ -105,9 +105,11 @@ for i, f in enumerate(images):
 # http://scikit-learn.org/stable/modules/classes.html#classification-metrics 
 conf_matrix = confusion_matrix(labels_gt, labels_pred, labels=[0,1])
 pretty_print_conf_mat(conf_matrix)
-print('Average precision score', average_precision_score(labels_gt, labels_pred))
-print('Precision score', precision_score(labels_gt, labels_pred))
-print('Recall score', recall_score(labels_gt, labels_pred))
-print('Accuracy score', accuracy_score(labels_gt, labels_pred))
-print('Total images classified', len(images))
-print('mean', np.load(caffe_root + 'python/caffe/imagenet/ilsvrc_2012_mean.npy').mean(1).mean(1))
+print 'Average precision score:{0:.2f}'.format(average_precision_score(labels_gt, labels_pred))
+print 'Precision score        :{0:.2f}'.format(precision_score(labels_gt, labels_pred))
+print 'Recall score           :{0:.2f}'.format(recall_score(labels_gt, labels_pred))
+print 'Accuracy score         :{0:.2f}'.format(accuracy_score(labels_gt, labels_pred))
+print 'Total images classified:{}'.format(len(images))
+print 'Image mean used        :{}'.format(np.load(caffe_root + 'python/caffe/imagenet/ilsvrc_2012_mean.npy').mean(1).mean(1))
+
+
