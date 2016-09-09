@@ -31,12 +31,14 @@ os.makedirs(images_dir)
 # You'll need your own API credentials
 API_KEY =  '91db0c8b9557b92f5b5f8db0b96a9f9f'
 API_SECRET = 'fd983d4ea5b198d9'
-per_page = 1
+per_page = 100
 flickr = FlickrAPI(API_KEY, API_SECRET)
 extras='url_sq,url_t,url_s,url_q,url_m,url_n,url_z,url_c,url_l,url_o'
 
-for photo in flickr.walk(text='blood',
-                         tags='blood',
+# this should yield 64 images
+for photo in flickr.walk(tags='blood',
+                         license=8, # just the government works
+                         sort='relevance',
                          per_page=per_page,
                          extras=extras):
     url = photo.get('url_c')
@@ -49,7 +51,8 @@ for photo in flickr.walk(text='blood',
 # http://joequery.me/code/flickr-api-image-search-python/
 # https://stuvel.eu/flickrapi-doc/
 
-
+# to understand the licenses
+# https://www.flickr.com/services/api/flickr.photos.licenses.getInfo.html
 
 
 
