@@ -51,10 +51,11 @@ for photo in flickr.walk(tags='blood',
 # http://joequery.me/code/flickr-api-image-search-python/
 # https://stuvel.eu/flickrapi-doc/
 
+# The api parameters
+# https://www.flickr.com/services/api/flickr.photos.search.html
+
 # to understand the licenses
 # https://www.flickr.com/services/api/flickr.photos.licenses.getInfo.html
-
-
 
 
 
