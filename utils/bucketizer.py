@@ -26,23 +26,26 @@ def pick_user_input(event, x, y, flags, param):
         if is_clicked_yes_box(x, y):
             highlight_yes_box()
             yes_high = True
+            return
         if  is_clicked_no_box(x, y):
             highlight_no_box()
             no_high = True
+            return
         if is_clicked_prev_box(x,y):
             get_prev_image()
+            return
         if is_clicked_next_box(x,y):
             get_next_image()
-            
+            return
 
 def is_clicked_no_box(x, y):
-    if  ((h - button_len - border) <= x <= (h - border)) and ((border) <= y <=  (button_len + border)):
+    if  ((x_len - button_len - border) <= x <= (x_len - border)) and ((border) <= y <=  (button_len + border)):
         return True
     else:
         return False
 
 def is_clicked_yes_box(x, y):
-    if  ((border) <= x <= (border + button_len)) and ((border) <= x <= (border + button_len)):
+    if  ((border) <= x <= (border + button_len)) and ((border) <= y <= (border + button_len)):
         return True
     else:
         return False
@@ -60,12 +63,12 @@ def is_clicked_next_box(x,y):
         return False
 
 def highlight_no_box():
-    cv2.rectangle(overlay, (h - button_len - border, border), (h - border , button_len + border), black, button_bw) 
+    cv2.rectangle(overlay, (x_len - button_len - border, border), (x_len - border , button_len + border), black, button_bw) 
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
 
 def highlight_yes_box():
-    cv2.rectangle(overlay, (border,border), (border + button_len, border + button_len), black, button_bw)
+    cv2.rectangle(overlay, (border, border), (border + button_len, border + button_len), black, button_bw)
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
 
@@ -75,7 +78,7 @@ def de_highlight_yes_box():
 
 
 def de_highlight_no_box():
-    cv2.rectangle(overlay, (h - button_len - border, border), (h - border , button_len + border), white, button_bw) 
+    cv2.rectangle(overlay, (x_len - button_len - border, border), (x_len - border , button_len + border), white, button_bw) 
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
 
@@ -88,11 +91,12 @@ def midpoint(a, b):
     return((a[0] + b[0])/2, (a[1] + b[1])/2) 
 
 
-def draw_next_prev():
-    p_00 = [h - button_len - border, w - button_len - border]
-    p_01 = [h - border             , w - button_len - border]
-    p_10 = [h - button_len - border, w - border             ]
-    p_11 = [h - border             , w - border             ]
+def draw_next_prev_button(x_l, y_l):
+    global overlay
+    p_00 = [x_l - button_len - border, y_l - button_len - border]
+    p_01 = [x_l - border             , y_l - button_len - border]
+    p_10 = [x_l - button_len - border, y_l - border             ]
+    p_11 = [x_l - border             , y_l - border             ]
 
     tp1 = midpoint(p_00, p_01)
     tp2 = midpoint(p_00, p_10)
@@ -144,9 +148,10 @@ def get_next_image():
         img = cv2.imread(img_list[cursor])
         roll = True
 
-# set_trace()
-
-img_list = ['/home/tempuser/Pictures/Lenna.jpg',
+img_list = ['/home/tempuser/Pictures/vacation.jpg',
+            '/home/tempuser/Pictures/Lenna.jpg',
+            '/home/tempuser/Pictures/xxx.jpg',
+            '/home/tempuser/Pictures/Lenna.jpg',
             '/home/tempuser/Pictures/xxx.jpg',
             '/home/tempuser/Pictures/Lenna.jpg',
             '/home/tempuser/Pictures/xxx.jpg',
@@ -162,19 +167,17 @@ window_str = 'image'
 
 while (1):
     img = cv2.imread(img_list[cursor])
-    h, w, c = img.shape
-    overlay = img.copy()
-    output = img.copy()
-    cv2.rectangle(overlay, (border,border), (border + button_len, border + button_len), green, cv2.FILLED) 
-    cv2.rectangle(overlay, (h - button_len - border, border), (h - border , button_len + border), red, cv2.FILLED) 
-
-
-    n, p = draw_next_prev()
-    alpha = 0.3     # apply the overlay
-    cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
-    
+    y_len, x_len, c = img.shape
+        
     cv2.namedWindow(window_str)
     cv2.setMouseCallback(window_str, pick_user_input)
+    overlay = img.copy()
+    output = img.copy()
+    cv2.rectangle(overlay, (border, border), (border + button_len, border + button_len), green, cv2.FILLED) 
+    cv2.rectangle(overlay, (x_len - button_len - border, border), (x_len - border , button_len + border), red, cv2.FILLED) 
+    n, p = draw_next_prev_button(x_len, y_len)
+    alpha = 0.3     # apply the overlay
+    cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
     while (1):
         cv2.imshow(window_str, output)
