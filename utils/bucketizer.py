@@ -10,6 +10,8 @@ mode = True # if True, draw rectangle. Press 'm' to toggle to curve
 ix,iy = -1,-1
 yes_high = False
 no_high = False
+cursor = 0 
+roll = False
 
 def pick_user_input(event, x, y, flags, param):
     global ix, iy, drawing, mode, yes_high, no_high, p
@@ -28,10 +30,8 @@ def pick_user_input(event, x, y, flags, param):
             highlight_no_box()
             no_high = True
         if is_clicked_prev_box(x,y):
-            print "Clicked prev button"
             get_prev_image()
         if is_clicked_next_box(x,y):
-            print "Clicked next button"
             get_next_image()
             
 
@@ -128,19 +128,29 @@ def point_inside_polygon(x,y,poly):
     return inside
 
 def get_prev_image():
-    pass
+    global cursor, img, roll
+    if cursor > 0:
+        cursor -= 1
+        print "getting prev {}".format(img_list[cursor])
+        img = cv2.imread(img_list[cursor])
+        roll = True
 
 
 def get_next_image():
-    pass
+    global cursor, img, roll
+    if cursor < len(img_list) -1:
+        cursor += 1
+        print "getting next {}".format(img_list[cursor])
+        img = cv2.imread(img_list[cursor])
+        roll = True
 
 # set_trace()
 
 img_list = ['/home/tempuser/Pictures/Lenna.jpg',
+            '/home/tempuser/Pictures/xxx.jpg',
             '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg']
+            '/home/tempuser/Pictures/xxx.jpg',
+            '/home/tempuser/Pictures/vacation.jpg']
 button_len = 50
 white = (255, 255, 255)
 green = (0, 255, 0)
@@ -149,8 +159,9 @@ black = (0,0,0)
 border =  10
 button_bw = 3
 window_str = 'image'
-for image in img_list:
-    img = cv2.imread(image)
+
+while (1):
+    img = cv2.imread(img_list[cursor])
     h, w, c = img.shape
     overlay = img.copy()
     output = img.copy()
@@ -159,16 +170,17 @@ for image in img_list:
 
 
     n, p = draw_next_prev()
-    print n, p
-    # apply the overlay
-    alpha = 0.3
+    alpha = 0.3     # apply the overlay
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
     
     cv2.namedWindow(window_str)
     cv2.setMouseCallback(window_str, pick_user_input)
 
-    while(1):
+    while (1):
         cv2.imshow(window_str, output)
+        if roll == True:
+            roll = False
+            break
         k = cv2.waitKey(1) & 0xFF
         if k == ord('m'):
             mode = not mode
@@ -176,3 +188,7 @@ for image in img_list:
             break
 
     cv2.destroyAllWindows()
+
+
+# references
+# http://www.ariel.com.au/a/python-point-int-poly.html
