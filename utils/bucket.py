@@ -9,6 +9,8 @@ import cv2
 import numpy as np
 import time
 from pudb import set_trace
+from argparse import ArgumentParser
+
 
 def super_impose(event, x, y, flags, params):
     global dst, is_yes_no_selection_made
@@ -39,10 +41,6 @@ def super_impose(event, x, y, flags, params):
                 dst = cv2.bitwise_or(img, ui)
                 get_prev_image()
             print 'inside prev box'
-
-    # if event == cv2.EVENT_LBUTTONUP:
-    #     de_hightlight_no_box()
-    #     dst = cv2.bitwise_or(img, ui)
 
 def is_inside_no_box(x, y):
     if  ((x_len - button_len - border) <= x <= (x_len - border)) and ((border) <= y <=  (button_len + border)):
@@ -154,20 +152,6 @@ def de_highlight_next_box(pts):
     cv2.fillPoly(ui, [pts], black)
 
 
-def get_image_list():
-    list = ['/home/tempuser/Pictures/xxx.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/vacation.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/xxx.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/xxx.jpg',
-            '/home/tempuser/Pictures/Lenna.jpg',
-            '/home/tempuser/Pictures/xxx.jpg',
-            '/home/tempuser/Pictures/vacation.jpg']
-    return list
-
-
 def get_prev_image():
     global cursor, img, roll_to_next
     if cursor > 0:
@@ -184,6 +168,22 @@ def get_next_image():
         roll_to_next = True
 
 
+def get_parameters():
+    parser = ArgumentParser()
+    parser.add_argument("-i", "--index-file", dest="index_file",
+                         help="file with all the indexes", required=True)
+    args = parser.parse_args()
+    return args.index_file
+
+def get_image_list(f_name):
+    with open(f_name, 'r') as f:
+        return f.read().splitlines()
+    
+
+index_file = get_parameters()
+img_list = get_image_list(index_file)
+print img_list
+
 border =  10
 button_bw = 1
 button_len = 50
@@ -196,12 +196,9 @@ red_plane = 2
 window_str = 'picker'
 roll_to_next = False
 
-is_yes_no_selection_made = False
-
-img_list = get_image_list()
-
 cursor = 0
 while(1):
+    is_yes_no_selection_made = False
     img = cv2.imread(img_list[cursor])
     y_len, x_len, c = img.shape
     print 'x {}, y {}'.format(x_len, y_len)
