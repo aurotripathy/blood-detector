@@ -8,33 +8,36 @@ Output is two directories separated by the choices we make via the UI
 import cv2
 import numpy as np
 import time
+from pudb import set_trace
 
 def super_impose(event, x, y, flags, params):
-    global dst, yes_no_selection_made
+    global dst, is_yes_no_selection_made
     if event == cv2.EVENT_LBUTTONDOWN:
         if is_inside_no_box(x,y):
             print 'inside no box'
             hightlight_no_box()
             de_hightlight_yes_box()
             dst = cv2.bitwise_or(img, ui)
-            yes_no_selection_made = True
+            is_yes_no_selection_made = True
         elif is_inside_yes_box(x,y):
             print 'inside yes box'
             hightlight_yes_box()
             de_hightlight_no_box()
             dst = cv2.bitwise_or(img, ui)
-            yes_no_selection_made = True
+            is_yes_no_selection_made = True
         elif is_inside_next_box(x, y):
             print 'inside next box'
-            if yes_no_selection_made:
+            if is_yes_no_selection_made:
                 highlight_next_box(n)
                 de_highlight_prev_box(p)
                 dst = cv2.bitwise_or(img, ui)
+                get_next_image()
         elif is_inside_prev_box(x, y):
-            if yes_no_selection_made:
+            if is_yes_no_selection_made:
                 highlight_prev_box(p)
                 de_highlight_next_box(n)
                 dst = cv2.bitwise_or(img, ui)
+                get_prev_image()
             print 'inside prev box'
 
     # if event == cv2.EVENT_LBUTTONUP:
@@ -150,6 +153,37 @@ def de_highlight_next_box(pts):
     pts = pts.reshape((-1,1,2))
     cv2.fillPoly(ui, [pts], black)
 
+
+def get_image_list():
+    list = ['/home/tempuser/Pictures/xxx.jpg',
+            '/home/tempuser/Pictures/Lenna.jpg',
+            '/home/tempuser/Pictures/vacation.jpg',
+            '/home/tempuser/Pictures/Lenna.jpg',
+            '/home/tempuser/Pictures/xxx.jpg',
+            '/home/tempuser/Pictures/Lenna.jpg',
+            '/home/tempuser/Pictures/xxx.jpg',
+            '/home/tempuser/Pictures/Lenna.jpg',
+            '/home/tempuser/Pictures/xxx.jpg',
+            '/home/tempuser/Pictures/vacation.jpg']
+    return list
+
+
+def get_prev_image():
+    global cursor, img, roll_to_next
+    if cursor > 0:
+        cursor -= 1
+        print "getting prev {}".format(img_list[cursor])
+        roll_to_next = True
+
+
+def get_next_image():
+    global cursor, img, roll_to_next
+    if cursor < len(img_list) -1:
+        cursor += 1
+        print "getting next {}".format(img_list[cursor])
+        roll_to_next = True
+
+
 border =  10
 button_bw = 1
 button_len = 50
@@ -159,26 +193,38 @@ black = (0, 0, 0)
 l_black = (128, 128, 128)
 green_plane = 1
 red_plane = 2
+window_str = 'picker'
+roll_to_next = False
 
-yes_no_selection_made = False
+is_yes_no_selection_made = False
 
+img_list = get_image_list()
 
-img = cv2.imread('/home/tempuser/Pictures/Lenna.jpg')
-y_len, x_len, c = img.shape
-draw_yes_box()
-draw_no_box()
-n, p = draw_next_prev_button(x_len, y_len)
-ui = np.zeros((x_len, y_len, 3), np.uint8)
-
-
-dst = cv2.add(img, ui)
-cv2.imshow('dst', dst)
-cv2.setMouseCallback('dst', super_impose)
-
+cursor = 0
 while(1):
-    cv2.imshow('dst', dst)
-    k = cv2.waitKey(1) & 0xFF
-    if k == 27:
-        break
+    img = cv2.imread(img_list[cursor])
+    y_len, x_len, c = img.shape
+    print 'x {}, y {}'.format(x_len, y_len)
+    ui = np.zeros((y_len, x_len, 3), np.uint8)
+    cv2.namedWindow(window_str)
+    cv2.setMouseCallback(window_str, super_impose)
+    draw_yes_box()
+    draw_no_box()
+    n, p = draw_next_prev_button(x_len, y_len)
 
-cv2.destroyAllWindows()
+    dst = cv2.add(img, ui)
+
+    while(1):
+        cv2.imshow(window_str, dst)
+        if roll_to_next == True:
+            roll_to_next = False
+            break
+        k = cv2.waitKey(1) & 0xFF
+        if k == 27:
+            break
+
+    cv2.destroyAllWindows()
+
+
+# references
+# http://www.ariel.com.au/a/python-point-int-poly.html
