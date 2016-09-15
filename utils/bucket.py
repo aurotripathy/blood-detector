@@ -1,19 +1,21 @@
 #! /usr/bin/env python
 
 '''
-Input directory is a combined set of images
-Output is two directories separated by the choices we make via the UI
+Input file is a set of indexes
+Output is two directories containing files separated by the choice 
+we make via the UI.
 '''
 
 import cv2
 import numpy as np
 import time
+import os
 from pudb import set_trace
 from argparse import ArgumentParser
-
+import shutil
 
 def super_impose(event, x, y, flags, params):
-    global dst, is_yes_no_selection_made
+    global dst, is_yes_no_selection_made, choice
     if event == cv2.EVENT_LBUTTONDOWN:
         if is_inside_no_box(x,y):
             print 'inside no box'
@@ -21,18 +23,21 @@ def super_impose(event, x, y, flags, params):
             de_hightlight_yes_box()
             dst = cv2.bitwise_or(img, ui)
             is_yes_no_selection_made = True
+            choice = 'no'
         elif is_inside_yes_box(x,y):
             print 'inside yes box'
             hightlight_yes_box()
             de_hightlight_no_box()
             dst = cv2.bitwise_or(img, ui)
             is_yes_no_selection_made = True
+            choice = 'yes'
         elif is_inside_next_box(x, y):
             print 'inside next box'
             if is_yes_no_selection_made:
                 highlight_next_box(n)
                 de_highlight_prev_box(p)
                 dst = cv2.bitwise_or(img, ui)
+                copy_current_image(choice)
                 get_next_image()
         elif is_inside_prev_box(x, y):
             if is_yes_no_selection_made:
@@ -41,6 +46,14 @@ def super_impose(event, x, y, flags, params):
                 dst = cv2.bitwise_or(img, ui)
                 get_prev_image()
             print 'inside prev box'
+
+def copy_current_image(c):
+    if c == 'no':
+        shutil.copyfile(img_list[cursor], 
+                        no_folder + os.path.basename(img_list[cursor]))
+    else:
+        shutil.copyfile(img_list[cursor], 
+                        yes_folder + os.path.basename(img_list[cursor]))
 
 def is_inside_no_box(x, y):
     if  ((x_len - button_len - border) <= x <= (x_len - border)) and ((border) <= y <=  (button_len + border)):
@@ -172,15 +185,28 @@ def get_parameters():
     parser = ArgumentParser()
     parser.add_argument("-i", "--index-file", dest="index_file",
                          help="file with all the indexes", required=True)
+    parser.add_argument("-q", "--question", dest="question",
+                         help="Question that is shown on the image", required=True)
     args = parser.parse_args()
-    return args.index_file
+    return args.index_file, args.question
+
 
 def get_image_list(f_name):
     with open(f_name, 'r') as f:
         return f.read().splitlines()
-    
 
-index_file = get_parameters()
+def write_on_screen(x, y, str):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    cv2.putText(img, str,(x, y), font, 1, black, 1)
+
+
+def set_default_choice():
+    if choice == 'no':
+        hightlight_no_box()
+        de_hightlight_yes_box()
+
+
+index_file, question_str = get_parameters()
 img_list = get_image_list(index_file)
 print img_list
 
@@ -193,11 +219,14 @@ black = (0, 0, 0)
 l_black = (128, 128, 128)
 green_plane = 1
 red_plane = 2
-window_str = 'picker'
+window_str = question_str
 roll_to_next = False
+yes_folder = 'yes_blood/'
+no_folder  = 'no_blood/'
 
 cursor = 0
 while(1):
+    choice = None
     is_yes_no_selection_made = False
     img = cv2.imread(img_list[cursor])
     y_len, x_len, c = img.shape
@@ -207,6 +236,7 @@ while(1):
     cv2.setMouseCallback(window_str, super_impose)
     draw_yes_box()
     draw_no_box()
+    write_on_screen((x_len - 2 * border)/2 - 20 , border * 3, question_str)
     n, p = draw_next_prev_button(x_len, y_len)
 
     dst = cv2.add(img, ui)
