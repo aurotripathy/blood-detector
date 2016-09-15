@@ -44,6 +44,7 @@ def super_impose(event, x, y, flags, params):
                 highlight_prev_box(p)
                 de_highlight_next_box(n)
                 dst = cv2.bitwise_or(img, ui)
+                # uncopy_current_image(choice)
                 get_prev_image()
             print 'inside prev box'
 
@@ -54,6 +55,14 @@ def copy_current_image(c):
     else:
         shutil.copyfile(img_list[cursor], 
                         yes_folder + os.path.basename(img_list[cursor]))
+
+def uncopy_current_image(c):
+    if c == 'no':
+        os.remove(no_folder + os.path.basename(img_list[cursor]))
+
+    else:
+        os.remove(yes_folder + os.path.basename(img_list[cursor]))
+
 
 def is_inside_no_box(x, y):
     if  ((x_len - button_len - border) <= x <= (x_len - border)) and ((border) <= y <=  (button_len + border)):
