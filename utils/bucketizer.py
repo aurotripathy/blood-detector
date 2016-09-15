@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from pudb import set_trace
 import itertools
-
+import time
 drawing = False # true if mouse is pressed
 mode = True # if True, draw rectangle. Press 'm' to toggle to curve
 ix,iy = -1,-1
@@ -35,8 +35,18 @@ def pick_user_input(event, x, y, flags, param):
             get_prev_image()
             return
         if is_clicked_next_box(x,y):
+            highlight_next_box()
+            draw_triangle_filled(overlay, n)
+            time.sleep(1)
             get_next_image()
             return
+    if event == cv2.EVENT_MOUSEMOVE:
+        if is_clicked_next_box(x,y):
+            print 'in next box'
+            draw_triangle_filled(overlay, n)
+        else:
+            draw_triangle_outline(overlay, n)
+
 
 def is_clicked_no_box(x, y):
     if  ((x_len - button_len - border) <= x <= (x_len - border)) and ((border) <= y <=  (button_len + border)):
@@ -57,7 +67,8 @@ def is_clicked_prev_box(x,y):
         return False
 
 def is_clicked_next_box(x,y):
-    if point_inside_polygon(x,y, n):
+    # draw_triangle_filled()
+    if point_inside_polygon(x, y, n):
         return True
     else:
         return False
@@ -71,6 +82,8 @@ def highlight_yes_box():
     cv2.rectangle(overlay, (border, border), (border + button_len, border + button_len), black, button_bw)
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
+def highlight_next_box():
+    pass
 
 def de_highlight_yes_box():
     cv2.rectangle(overlay, (border,border), (border + button_len, border + button_len), white, button_bw)
@@ -82,10 +95,19 @@ def de_highlight_no_box():
     cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
 
-def draw_triangle(img, p1, p2, p3):
-    pts = np.array([p1, p2, p3], np.int32)
+def draw_triangle_outline(img, pts):
     pts = pts.reshape((-1,1,2))
-    cv2.polylines(img,[pts], True, (0, 0, 0), 2)
+    cv2.polylines(img, [pts], True, black, 2)
+
+def draw_triangle_filled(img, pts):
+    pts = pts.reshape((-1,1,2))
+    cv2.fillPoly(img, [pts], black)
+    cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
+
+def draw_triangle_empty(img, pts):
+    pts = pts.reshape((-1,1,2))
+    cv2.fillPoly(img, [pts], white)
+    cv2.addWeighted(overlay, alpha, output, 1 - alpha, 0, output)
 
 def midpoint(a, b):
     return((a[0] + b[0])/2, (a[1] + b[1])/2) 
@@ -103,10 +125,10 @@ def draw_next_prev_button(x_l, y_l):
     tp3 = midpoint(p_10, p_11)
     tp4 = midpoint(p_01, p_11)
 
-    draw_triangle(overlay, tp1, tp2, tp3)
-    draw_triangle(overlay, tp1, tp4, tp3)
     tri_prev = np.array([tp1, tp2, tp3], np.int32)
     tri_next = np.array([tp1, tp4, tp3], np.int32)
+    draw_triangle_outline(overlay, tri_prev)
+    draw_triangle_outline(overlay, tri_next)
     return tri_next, tri_prev
                             
 
