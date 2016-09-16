@@ -13,56 +13,125 @@ import os
 from pudb import set_trace
 from argparse import ArgumentParser
 import shutil
+import keycode
 
-def super_impose(event, x, y, flags, params):
-    global dst, is_yes_no_selection_made, choice
+def handle_mouse_activity(event, x, y, flags, params):
+    global dst, is_yes_no_selection_made, copy_choice
     if event == cv2.EVENT_LBUTTONDOWN:
         if is_inside_no_box(x,y):
             print 'inside no box'
-            hightlight_no_box()
-            de_hightlight_yes_box()
-            dst = cv2.bitwise_or(img, ui)
-            is_yes_no_selection_made = True
-            choice = 'no'
+            select_no(auto_next)
         elif is_inside_yes_box(x,y):
             print 'inside yes box'
-            hightlight_yes_box()
-            de_hightlight_no_box()
-            dst = cv2.bitwise_or(img, ui)
-            is_yes_no_selection_made = True
-            choice = 'yes'
+            select_yes(auto_next)
         elif is_inside_next_box(x, y):
             print 'inside next box'
-            if is_yes_no_selection_made:
-                highlight_next_box(n)
-                de_highlight_prev_box(p)
-                dst = cv2.bitwise_or(img, ui)
-                copy_current_image(choice)
-                get_next_image()
+            goto_next()
         elif is_inside_prev_box(x, y):
-            if is_yes_no_selection_made:
-                highlight_prev_box(p)
-                de_highlight_next_box(n)
-                dst = cv2.bitwise_or(img, ui)
-                # uncopy_current_image(choice)
-                get_prev_image()
             print 'inside prev box'
+            goto_prev()
+
+    cv2.imshow(window_str, dst)
+
+def handle_keystrokes():
+    while (1):
+        key = cv2.waitKey(0)
+        if key in keycode.KEY_ESCAPE or key in keycode.KEY_CLOSE_WINDOW:
+            break;
+        elif  (key & 0xFF) in [ord("y"), ord("Y")] :
+            print 'Yes'   
+            select_yes(auto_next)
+        elif  (key & 0xFF) in [ord("n"), ord("Y")] :
+            print 'No'
+            select_no(auto_next)
+        elif key in keycode.KEY_RIGHT or key in keycode.KEY_SPACE:
+            print 'Next'
+            goto_next()
+        elif key in keycode.KEY_LEFT:
+            print 'Prev'
+            goto_prev()
+        else :
+            print 'key {}'.format(key)
+
+        cv2.imshow(window_str, dst)
+
+
+def select_no(auto_next):
+    global dst, is_yes_no_selection_made, copy_choice, uncopy_choice
+    hightlight_no_box()
+    de_hightlight_yes_box()
+    dst = cv2.bitwise_or(img, ui)
+    is_yes_no_selection_made = True
+    copy_choice = 'no'
+    uncopy_choice = 'yes'
+    if auto_next == True :
+        goto_next();
+
+def select_yes(auto_next):
+    global dst, is_yes_no_selection_made, copy_choice, uncopy_choice
+    hightlight_yes_box()
+    de_hightlight_no_box()
+    dst = cv2.bitwise_or(img, ui)
+    is_yes_no_selection_made = True
+    copy_choice = 'yes'
+    uncopy_choice = 'no'
+    if auto_next == True :
+        goto_next();
+
+def goto_next():
+    global dst, is_yes_no_selection_made, copy_choice, uncopy_choice
+    if is_yes_no_selection_made:
+        highlight_next_box(n)
+        de_highlight_prev_box(p)
+        dst = cv2.bitwise_or(img, ui)
+        copy_current_image(copy_choice)
+        uncopy_current_image(uncopy_choice)
+        get_next_image()
+        is_yes_no_selection_made = False
+        prepare_load_image()
+
+def goto_prev():
+    global dst, is_yes_no_selection_made, copy_choice, uncopy_choice
+    if is_yes_no_selection_made:
+        highlight_prev_box(p)
+        de_highlight_next_box(n)
+        dst = cv2.bitwise_or(img, ui)
+        copy_current_image(copy_choice)
+        uncopy_current_image(uncopy_choice)
+        get_prev_image()
+        is_yes_no_selection_made = False
+        prepare_load_image()
+
 
 def copy_current_image(c):
     if c == 'no':
         shutil.copyfile(img_list[cursor], 
                         no_folder + os.path.basename(img_list[cursor]))
-    else:
+    elif c == 'yes':
         shutil.copyfile(img_list[cursor], 
                         yes_folder + os.path.basename(img_list[cursor]))
+    else :
+        print 'Invalid Choice'
 
 def uncopy_current_image(c):
     if c == 'no':
-        os.remove(no_folder + os.path.basename(img_list[cursor]))
+        if os.path.isfile(no_folder + os.path.basename(img_list[cursor])):
+            os.remove(no_folder + os.path.basename(img_list[cursor]))
+    elif c == 'yes':
+        if os.path.isfile(yes_folder + os.path.basename(img_list[cursor])):
+            os.remove(yes_folder + os.path.basename(img_list[cursor]))
+    else :
+        print 'Invalid Choice'
 
-    else:
-        os.remove(yes_folder + os.path.basename(img_list[cursor]))
+def is_yes_processed():
+    if os.path.isfile(yes_folder + os.path.basename(img_list[cursor])):
+        return True
+    return False
 
+def is_no_processed():
+    if os.path.isfile(no_folder + os.path.basename(img_list[cursor])):
+        return True
+    return False
 
 def is_inside_no_box(x, y):
     if  ((x_len - button_len - border) <= x <= (x_len - border)) and ((border) <= y <=  (button_len + border)):
@@ -75,7 +144,6 @@ def is_inside_yes_box(x, y):
         return True
     else:
         return False
-
 
 def hightlight_yes_box():
     ui[border:border+button_len, border:border + button_len, green_plane] = 255
@@ -196,8 +264,14 @@ def get_parameters():
                          help="file with all the indexes", required=True)
     parser.add_argument("-q", "--question", dest="question",
                          help="Question that is shown on the image", required=True)
+    parser.add_argument("-a", "--auto-load", dest="auto_load", 
+                        help="Autoload till categorized images", 
+                        action = "store_true",  required=False)
+    parser.add_argument("-n", "--auto-next", dest="auto_next", 
+                        help="Auto step to next images", 
+                        action = "store_true",  required=False)
     args = parser.parse_args()
-    return args.index_file, args.question
+    return args.index_file, args.question, args.auto_load, args.auto_next
 
 
 def get_image_list(f_name):
@@ -210,17 +284,60 @@ def write_on_screen(x, y, str):
 
 
 def set_default_choice():
-    if choice == 'no':
+    if copy_choice == 'no':
         hightlight_no_box()
         de_hightlight_yes_box()
 
+def prepare_load_image():
+    global auto_load
+    global img, dst, ui, n, p, x_len, y_len
+    global copy_choice, uncopy_choice, is_yes_no_selection_made, roll_to_next
 
-index_file, question_str = get_parameters()
+    copy_choice = None
+    uncopy_choice = None
+    roll_to_next = False
+    is_yes_no_selection_made = False
+    img = cv2.imread(img_list[cursor])
+    y_len, x_len, c = img.shape
+    print 'x {}, y {}'.format(x_len, y_len)
+    ui = np.zeros((y_len, x_len, 3), np.uint8)
+
+    draw_yes_box()
+    draw_no_box()
+    write_on_screen((x_len - 2 * border)/2 - 20 , border * 3, question_str)
+    n, p = draw_next_prev_button(x_len, y_len)
+    dst = cv2.add(img, ui)
+
+    if (is_yes_processed() and not is_no_processed()):
+        select_yes(auto_load)
+    elif (is_no_processed() and not is_yes_processed()):
+        select_no(auto_load)
+
+        auto_load = False
+
+index_file, question_str, auto_load, auto_next = get_parameters()
 img_list = get_image_list(index_file)
-print img_list
+
+for img_url in img_list:
+    print img_url
+
+if auto_load == True:
+    print "Auto loading Till classified images."
+if auto_next == True:
+    print "Auto progress without NEXT"
+
+yes_folder = 'yes_blood/'
+no_folder  = 'no_blood/'
+
+if not os.path.isdir(yes_folder):
+    os.mkdir (yes_folder)
+if not os.path.isdir(no_folder):
+    os.mkdir (no_folder)
+
+cursor = 0
 
 border =  10
-button_bw = 1
+button_bw = 2
 button_len = 50
 green = (0, 255, 0)
 red = (0, 0, 255)
@@ -228,39 +345,19 @@ black = (0, 0, 0)
 l_black = (128, 128, 128)
 green_plane = 1
 red_plane = 2
+
 window_str = question_str
-roll_to_next = False
-yes_folder = 'yes_blood/'
-no_folder  = 'no_blood/'
+prepare_load_image()
 
-cursor = 0
-while(1):
-    choice = None
-    is_yes_no_selection_made = False
-    img = cv2.imread(img_list[cursor])
-    y_len, x_len, c = img.shape
-    print 'x {}, y {}'.format(x_len, y_len)
-    ui = np.zeros((y_len, x_len, 3), np.uint8)
-    cv2.namedWindow(window_str)
-    cv2.setMouseCallback(window_str, super_impose)
-    draw_yes_box()
-    draw_no_box()
-    write_on_screen((x_len - 2 * border)/2 - 20 , border * 3, question_str)
-    n, p = draw_next_prev_button(x_len, y_len)
+cv2.namedWindow(window_str,cv2.WINDOW_NORMAL)
+cv2.moveWindow(window_str, 0,0)
 
-    dst = cv2.add(img, ui)
+cv2.imshow(window_str, dst)
 
-    while(1):
-        cv2.imshow(window_str, dst)
-        if roll_to_next == True:
-            roll_to_next = False
-            break
-        k = cv2.waitKey(1) & 0xFF
-        if k == 27:
-            break
+cv2.setMouseCallback(window_str, handle_mouse_activity)
+handle_keystrokes()
 
-    cv2.destroyAllWindows()
-
+cv2.destroyAllWindows()
 
 # references
 # http://www.ariel.com.au/a/python-point-int-poly.html
