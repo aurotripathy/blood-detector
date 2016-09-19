@@ -2,8 +2,9 @@
 
 '''
 Input file is a set of indexes
-Output is two directories containing files separated by the choice 
+Output is two directories containing files separated by the yes/no choice 
 we make via the UI.
+Key board support added, keys are y/n/->/<-
 '''
 
 import cv2
@@ -326,8 +327,8 @@ if auto_load == True:
 if auto_next == True:
     print "Auto progress without NEXT"
 
-yes_folder = 'yes_blood/'
-no_folder  = 'no_blood/'
+yes_folder = 'yes_' + question_str + '/'
+no_folder  = 'no_' + question_str + '/'
 
 if not os.path.isdir(yes_folder):
     os.mkdir (yes_folder)
